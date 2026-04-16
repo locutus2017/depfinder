@@ -1,26 +1,22 @@
-// Author: George Vlahavas
-// Well, not really, this is just a hack of zpm that is created by:
-// Author: Nigel Bosch
-// std::string Email = "sparkynigel" + "@" + "gmail" + ".com";
+// depfinder-search: resolves shared library paths to owning Slackware packages.
+// Adapted from zpm by Nigel Bosch <sparkynigel@gmail.com>.
 // See COPYING for license information.
+//
+// Usage: depfinder-search <pid>
+//   Reads  /tmp/depfinder.<pid>/LIBS      (one library path per line)
+//   Writes /tmp/depfinder.<pid>/DEPS      (one "pkg1|pkg2" entry per line)
 
 #include <iostream>
-#include <getopt.h>
-#include <vector>
-#include "defs.h"
 #include "CWhatProvides.h"
-
-#define SET_ACTION(action) _action = action
 
 int main(int argc, char* argv[])
 {
-	std::vector<std::string>	_files;
-	std::string			_arg_whatprovides;
-	std::string			_shell_pid;
+    if (argc != 2) {
+        std::cerr << "Usage: depfinder-search <pid>\n";
+        return 1;
+    }
 
-	_arg_whatprovides = argv[1];
-	_shell_pid = argv[2];
-
-	CWhatProvides	_ori(_arg_whatprovides, _shell_pid);
-	return 0;
+    std::string shellpid = argv[1];
+    CWhatProvides wp(shellpid);
+    return 0;
 }
