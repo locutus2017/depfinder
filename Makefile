@@ -1,17 +1,15 @@
 ARCH ?= x86_64
 
-CCEXTRAS="-Wall -Wextra"
-
 ifeq ($(ARCH),x86_64)
 	LIBDIRSUFFIX = 64
 else
-	LIBDIRSUFFIX = ""
+	LIBDIRSUFFIX =
 endif
 
 all: depfinder-search man
 
 depfinder-search:
-	$(MAKE) -C depfinder-search/
+	$(MAKE) -C depfinder-search/ ARCH=$(ARCH)
 
 man:
 	@txt2tags -o man/depfinder.man man/depfinder.t2t || \
@@ -25,7 +23,7 @@ install:
 		$(DESTDIR)/usr/bin/depfinder
 	install -m 755 depfinder-search/depfinder-search $(DESTDIR)/usr/libexec/
 	[ -f man/depfinder.man ] && \
-		install -D -m 644 man/depfinder.man $(DESTDIR)/usr/man/man1/depfinder.1
+		install -D -m 644 man/depfinder.man $(DESTDIR)/usr/man/man1/depfinder.1 || true
 
 clean:
 	rm -f man/depfinder.man
