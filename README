@@ -1,3 +1,5 @@
+** CAUTION: This is not an official release, still needs testing**
+
 depfinder is a tool that finds the dependencies of Slackware packages.
 
 depfinder is much faster than requiredbuilder, a very nice script
