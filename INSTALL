@@ -26,4 +26,4 @@ To remove, you can just:
 
  rm /usr/bin/depfinder
  rm /usr/libexec/depfinder-search
- rm /usr/share/locale/*/LC_MESSAGES/depfinder.mo
+ rm /usr/man/man1/depfinder.1
