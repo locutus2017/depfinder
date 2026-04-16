@@ -26,14 +26,16 @@ dependencies with version information and to a file: a .dep file
 with a comma separated list without version information, or a
 //slack-required// file that includes version information.
 
-**depfinder** can check //.tgz//, //.tbz//, //.tlz//, //.txz// and
-//.tbr// packages for dependencies
+**depfinder** can check //.tgz//, //.tbz//, //.tlz//, //.txz//,
+//.tbr// and //.tzst// packages for dependencies
 but you can also point it to a packaging directory where you have the
 package contents extracted.
 
-**depfinder** uses **ldd** for discovering dependencies, and finds
-dependencies of binary files with it. Detecting python dependencies is
-also  supported by use of the **-p** switch.
+**depfinder** uses **readelf** to discover shared library dependencies
+without executing the package binaries, making it safe to use on
+untrusted or cross-compiled packages. Sonames are resolved to real
+library paths using the system **ldconfig** cache. Detecting python
+dependencies is also supported by use of the **-p** switch.
 
 If a certain library is included in more than one packages, then all
 packages that include it will be listed in one entry using an "or"
@@ -52,19 +54,11 @@ and will not generate a dependency list.
 If a python module that is needed by a package is not present in the
 system, a warning will be displayed instead of an error and the
 dependency list will be generated. Consider these warnings as hints for
-missing dependencies, optional or not. If your python application doesn't
-work, it's probably because of one or more of those reported missing
-modules. If your application seems to work fine, but you still get some
-warnings, it might mean that your application might acquire some extra
-functionality by installing some of the reported modules. And as the
-python code parsing cannot be perfectly accurate, there might be some
-false positives in these warnings. A line that only reads "import foo"
-for example, that is inside a block quote in a python file. is going to be
-parsed anyway and "foo" will be reported as a missing module, even
-though it's inside a block quote and will never be executed by python.
+missing dependencies, optional or not.
 
 **depfinder** also has support for running multiple jobs which makes it
-a **lot** faster on PCs with multiple CPUs/cores.
+a **lot** faster on PCs with multiple CPUs/cores when processing packages
+with many binaries.
 
 
 = OPTIONS =
@@ -87,7 +81,7 @@ Checks all files in the directory tree instead of following the FHS. If
 ///usr/lib//, ///lib// or ///usr/lib64//, ///lib64// for 32-bit and
 64-bit architectures respectively. If **-a** is used, then depfinder
 searches for files dynamically linking to libraries anywhere inside the
-package. This option could be usefull if the installation scripts put
+package. This option could be useful if the installation scripts put
 binaries in a non-standard location.
 
 : **-p**
@@ -95,32 +89,18 @@ Attempts to discover python dependencies. Using this switch, depfinder
 searches for all files that can be recognized as python scripts.
 All python files that are detected are parsed for modules that they
 import and depfinder ultimately reports which packages these modules
-belong to along with all other detected dependencies. The list of
-reported python dependencies might not be final. Some python
-packages might be reported as dependencies, while actually being
-optional dependencies. This is because an //import// command in python
-might be executed after a conditional statement, or only after some
-certain action is taken by the end user etc. For example, a python
-module might only be providing extra functionality to an application and
-it may be imported only after it has been established that it is
-present in the system. If it isn't, it won't be imported at all, so the
-application will work without it anyway, albeit with some missing
-functionality perhaps. It's up to the packager to determine which of
-the reported python dependencies are actually dependencies and which
-ones should merely be suggested packages.
+belong to along with all other detected dependencies. Python 3 is used
+by default.
 
 : **-3**
-If you use the **-p** option to detect python dependencies, the default
-python version that will be used is python 2. This option turns on
-support for python 3. Note that it is possible to detect only python 2
-or only python 3 dependencies in a single run, not both. This option
-only makes sense when used together with the **-p** option, otherwise it
-does nothing.
+Kept for backwards compatibility; python3 is now the default when **-p**
+is used. This option is a no-op.
 
 : **-j** //jobs//
-Specifies the number of parallel depfinder jobs to run. depfinder will
-finish considerably faster if this matches exactly the number of your
-CPUs/cores (default number of jobs: 1)
+Specifies the number of parallel jobs for scanning ELF binaries. Speeds
+up processing of packages with many binaries when set to match your CPU
+count. Pass //auto// to detect the number of available cores
+automatically. (default: 1)
 
 
 = GENERAL OPTIONS =
@@ -133,9 +113,13 @@ Prints a usage message briefly summarizing all command-line options
 and exits.
 
 
-= WEBSITE =
+= ENVIRONMENT =
 
-http://depfinder.sourceforge.net/
+: **DEPFINDERNOEXIT=1**
+By default depfinder exits with an error if the package requires
+libraries that are not present in the system. Setting this variable to
+**1** suppresses that exit, allowing the dependency list to be generated
+even with missing libraries.
 
 
 = AUTHORS =
@@ -145,4 +129,4 @@ depfinder was written by George Vlahavas <vlahavas~at~gmail~dot~com>
 
 = SEE ALSO =
 
-**ldd**(1)
+**readelf**(1), **ldconfig**(8), **ldd**(1)
